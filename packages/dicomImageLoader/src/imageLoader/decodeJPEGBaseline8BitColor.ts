@@ -59,7 +59,7 @@ function decodeJPEGBaseline8BitColor(
         /**
          * @todo check this context
          */
-        context.drawImage(this as any, 0, 0);
+        context.drawImage(img as any, 0, 0);
         const imageData = context.getImageData(0, 0, img.width, img.height);
         const end = new Date().getTime();
 
