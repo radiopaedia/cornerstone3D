@@ -11,7 +11,7 @@ import {
   PixelDataTypedArray,
 } from '../types';
 import convertColorSpace from './convertColorSpace';
-import decodeImageFrame from './decodeImageFrame';
+import decodeImageFrame from './decodeImageFrame-noWorkers';
 import getImageFrame from './getImageFrame';
 import getScalingParameters from './getScalingParameters';
 import { getOptions } from './internal/options';

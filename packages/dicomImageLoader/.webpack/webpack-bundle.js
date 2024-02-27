@@ -15,7 +15,7 @@ module.exports = {
   mode: 'production',
   context,
   entry: {
-    cornerstoneDICOMImageLoader: './imageLoader/index.ts',
+    
     cornerstoneDICOMImageLoaderNoWebWorkers: './imageLoader/index-noWorkers.ts',
   },
   target: 'web',
