@@ -21,6 +21,7 @@ let options: LoaderOptions = {
   decodeConfig: {
     convertFloatPixelDataToInt: true,
     use16BitDataType: false,
+    useNativeJPEGBaseline8BitDecode: true,
   },
 };
 

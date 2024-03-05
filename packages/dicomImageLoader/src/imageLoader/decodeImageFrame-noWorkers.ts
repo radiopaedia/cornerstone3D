@@ -61,6 +61,7 @@ function decodeImageFrame(
       // Handle 8-bit JPEG Baseline color images using the browser's built-in
       // JPEG decoding
       if (
+        getOptions().decodeConfig.useNativeJPEGBaseline8BitDecode === true &&
         imageFrame.bitsAllocated === 8 &&
         (imageFrame.samplesPerPixel === 3 || imageFrame.samplesPerPixel === 4)
       ) {
