@@ -71,19 +71,20 @@ export default function getOrCreateCanvas(
   }
 
   const canvas = createCanvas(internalDiv);
+  // Radiopaedia note: the below sizing code is irrelevant for dicom-render
   // Fit the canvas into the div
-  const rect = internalDiv.getBoundingClientRect();
-  const devicePixelRatio = window.devicePixelRatio || 1;
+  // const rect = internalDiv.getBoundingClientRect();
+  // const devicePixelRatio = window.devicePixelRatio || 1;
 
   // The width/height is the number of physical pixels which will completely
   // cover the div so that no pixels, fractional or full are left uncovered.
   // Thus, it is the ceiling of the CSS size times the physical pixels.
   // In theory, the physical pixels can be offset from CSS pixels, but in practice
   // this hasn't been observed.
-  const width = Math.ceil(rect.width * devicePixelRatio);
-  const height = Math.ceil(rect.height * devicePixelRatio);
-  canvas.width = width;
-  canvas.height = height;
+  // const width = Math.ceil(rect.width * devicePixelRatio);
+  // const height = Math.ceil(rect.height * devicePixelRatio);
+  // canvas.width = width;
+  // canvas.height = height;
   // Reset the size of the canvas to be the number of physical pixels,
   // expressed as CSS pixels, with a tiny extra amount to prevent clipping
   // to the next lower size in the physical display.

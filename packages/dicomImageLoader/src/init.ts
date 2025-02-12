@@ -2,11 +2,11 @@ import { setOptions } from './imageLoader/internal/index';
 import type { LoaderOptions } from './types';
 import registerLoaders from './imageLoader/registerLoaders';
 import { getWebWorkerManager } from '@cornerstonejs/core';
+import { Worker } from 'node:worker_threads';
 
 const workerFn = () => {
   const instance = new Worker(
     new URL('./decodeImageFrameWorker.js', import.meta.url),
-    { type: 'module' }
   );
   return instance;
 };

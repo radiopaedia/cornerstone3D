@@ -2,6 +2,8 @@
 import bilinear from './shared/scaling/bilinear';
 import replicate from './shared/scaling/replicate';
 import { expose } from 'comlink';
+import nodeEndpoint from 'comlink/dist/esm/node-adapter.mjs';
+import { parentPort } from 'node:worker_threads';
 
 import decodeLittleEndian from './shared/decoders/decodeLittleEndian';
 import decodeBigEndian from './shared/decoders/decodeBigEndian';
@@ -469,4 +471,4 @@ const obj = {
   },
 };
 
-expose(obj);
+expose(obj, parentPort ? nodeEndpoint(parentPort) : undefined);
