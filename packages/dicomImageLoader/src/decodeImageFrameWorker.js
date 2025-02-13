@@ -471,4 +471,4 @@ const obj = {
   },
 };
 
-expose(obj, parentPort ? nodeEndpoint(parentPort) : undefined);
+expose(obj, parentPort ? nodeEndpoint(parentPort) : globalThis);
