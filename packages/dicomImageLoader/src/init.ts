@@ -8,6 +8,8 @@ const workerFn = () => {
   const instance = new Worker(
     new URL('./decodeImageFrameWorker.js', import.meta.url),
   );
+  // do not let the running worker prevent script completion in node.js
+  if (typeof instance.unref === 'function') instance.unref()
   return instance;
 };
 

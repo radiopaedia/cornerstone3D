@@ -65,3 +65,14 @@ openjpegwasm_decode.js aborts with the error:
 Patching the "new URL(...)" bit to a proper import of the decodewasm in the codec wrappers fixes the bundling/loading issues (and the code is in there already, just commented out)
 
 Dicom-render (and fauxdom) doesn't do any sizing or layout so `getBoundingClientRect()` is not supported. Instead of hacking in a shim it's probably easier & cleaner just patching it out.
+
+Packaging turned out to be a bit more annoying as expected, turns out we import the zipped package from a GitHub release, created a package.sh script to generate the gzipped tars. Eventually figured out it's not enough to use `tar`, but should use `yarn pack` to package up a module into a `.tgz` file to be correctly loaded
+
+Some event listeners were keeping the node.js process from terminating so `dicom-render.js` now explicitly exits after rendering with `process.exit(0)`.
+
+The worker threads did not receive the patched `console.*` functions so were logging debugging info to the console output. This meant that console output from included modules was showing up on the `stdout`. This was breaking the tests (though arguably only for the deprecated "json" output). ESBuild has a `drop: ['console']` output that removes console calls from the produced output. Unfortunately Emscripten (used by some of the codecs)     generates JS glue code that stores the console logging calls to be passed into Wasm functions, along the lines of `callback = foo || console.log.bind(console)`, when the console bind was replaced by ESBuild (with `undefined`) the Wasm codecs started breaking. Since this is not in cornerstone core but in the separate [codecs](https://github.com/cornerstonejs/codecs) repo patching is not practical, looking into ESBuild patching the source at build time.
+
+This would manifest as a cryptic `Error [TypeError]: (intermediate value)(intermediate value)(intermediate value) is not a function` error, it would happen inside the worker so very little debugging options available and the backtrace is also missing crucial information.
+Added another ESBuild plugin that takes care of patching this out in every wasm decoder module that is touched during build.
+
+Turns out process.exit() will [not wait for stdout output to be written](https://github.com/nodejs/node/issues/12921#issuecomment-300733885), which was breaking standardout (Ruby would only receive 64K worth of `stdout` output). Again, this was only breaking the `json` output but was pointing at forcing `process.exit` not being a good solution here. Workers in node can be [`unref`-d](https://nodejs.org/api/worker_threads.html#workerunref) which should make running workers not block script completion. Fixed this in the patched cornerstone build using unref on worker instances and that indeed fixed the script termination issue.
