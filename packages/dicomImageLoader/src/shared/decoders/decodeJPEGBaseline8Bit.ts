@@ -7,11 +7,11 @@ import type { ByteArray } from 'dicom-parser';
 import libjpegTurboFactory from '@cornerstonejs/codec-libjpeg-turbo-8bit/decodewasmjs';
 
 // @ts-ignore
-// import libjpegTurboWasm from '@cornerstonejs/codec-libjpeg-turbo-8bit/decodewasm';
-const libjpegTurboWasm = new URL(
-  '@cornerstonejs/codec-libjpeg-turbo-8bit/decodewasm',
-  import.meta.url
-);
+import libjpegTurboWasm from '@cornerstonejs/codec-libjpeg-turbo-8bit/decodewasm';
+//const libjpegTurboWasm = new URL(
+//  '@cornerstonejs/codec-libjpeg-turbo-8bit/decodewasm',
+//  import.meta.url
+//);
 import type { Types } from '@cornerstonejs/core';
 
 const local: {
@@ -88,6 +88,7 @@ async function decodeAsync(
   };
 
   const pixelData = getPixelData(frameInfo, decodedPixelsInWASM);
+  encodedImageInfo.componentsPerPixel = pixelData.length/frameInfo.width/frameInfo.height;
 
   const encodeOptions = {
     frameInfo,
@@ -112,11 +113,24 @@ function getPixelData(frameInfo, decodedBuffer: ByteArray) {
     );
   }
 
-  return new Uint8Array(
+  const src = new Uint8Array(
     decodedBuffer.buffer,
     decodedBuffer.byteOffset,
     decodedBuffer.byteLength
   );
+  // expand RGB to RGBA
+  if (frameInfo.componentCount === 3) {
+    const dst = new Uint8Array(src.length/3*4);
+    for (let i=0; i<src.length/3; ++i) {
+      dst[i*4]=src[i*3];
+      dst[i*4+1]=src[i*3+1];
+      dst[i*4+2]=src[i*3+2];
+      dst[i*4+3]=255;
+    }
+    return dst
+  } else {
+    return src
+  }
 }
 
 export default decodeAsync;

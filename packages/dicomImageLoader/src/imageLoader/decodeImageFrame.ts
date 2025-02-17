@@ -106,6 +106,7 @@ function decodeImageFrame(
       // Handle 8-bit JPEG Baseline color images using the browser's built-in
       // JPEG decoding
       if (
+        false && // disable browser-based decode for dicom-render
         imageFrame.bitsAllocated === 8 &&
         (imageFrame.samplesPerPixel === 3 || imageFrame.samplesPerPixel === 4)
       ) {
