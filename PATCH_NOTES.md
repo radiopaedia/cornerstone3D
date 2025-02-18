@@ -68,6 +68,8 @@ Dicom-render (and fauxdom) doesn't do any sizing or layout so `getBoundingClient
 
 Packaging turned out to be a bit more annoying as expected, turns out we import the zipped package from a GitHub release, created a package.sh script to generate the gzipped tars. Eventually figured out it's not enough to use `tar`, but should use `yarn pack` to package up a module into a `.tgz` file to be correctly loaded
 
+### Beta 3
+
 Some event listeners were keeping the node.js process from terminating so `dicom-render.js` now explicitly exits after rendering with `process.exit(0)`.
 
 The worker threads did not receive the patched `console.*` functions so were logging debugging info to the console output. This meant that console output from included modules was showing up on the `stdout`. This was breaking the tests (though arguably only for the deprecated "json" output). ESBuild has a `drop: ['console']` output that removes console calls from the produced output. Unfortunately Emscripten (used by some of the codecs)     generates JS glue code that stores the console logging calls to be passed into Wasm functions, along the lines of `callback = foo || console.log.bind(console)`, when the console bind was replaced by ESBuild (with `undefined`) the Wasm codecs started breaking. Since this is not in cornerstone core but in the separate [codecs](https://github.com/cornerstonejs/codecs) repo patching is not practical, looking into ESBuild patching the source at build time.
@@ -83,3 +85,9 @@ This is a result of the ["always prescale" change](https://www.cornerstonejs.org
 [As before](https://github.com/radiopaedia/cornerstone3D/commit/e32d13b34fdf92de68a8a641bb978cedd27f3f76#diff-19e7f96430cf5f9c401a6d469fb0ea07e2a93773b68eb5f68b3b29e15eaf534a), Cornerstone's optimization where they use the browser-native Image decoder for some files proves a problem in Node.js (which has no native Image support/loader). To make things more confusing, Cornerstone still has support for a non-worker `decodeImageFrame` which is used in `createImage.ts`, incidentally something used by `wadouri.loadImage()` which is precisely what `dicom-render` uses to load images (in `loadImageBlob`). This means that we again need to patch out the use of the native code and instead pass the image for decoding to Wasm. This works well, however there seems to be a color issue on the YBR_FULL test image that didn't manifest in the 1.x branch. It's not missing or swapped channels (black shows up as green, white displays as pink), but something else entirely: white ends up rgb(255,121,255), black turns rgb(0,135,0) however grays seems unaffected.
 
 Dumping the Wasm decoder buffer shows that the decoded image data is correct. The decoded output is correct RGB, but maybe Cornerstone things the YBR input needs a color transform? Yeah that's it it's getting color-converted in `createImage`. I think the issue is we only get 3 components back, not 4 (RGB, not RGBA). If 4 components came back the color conversion would be skipped. Modified the wasm decoder to expand the 3-component RGB to RGBA before returning it (will need to check how or why this worked in pre-2.0 dicom-render).
+
+### Beta 4
+
+To re-enable browser builds (for the webui but especially for reports), decided to rip out much of the `worker_thread` patches and moved them inside of the ESBuild process which now live patches the relevant files in a custom plugin.
+
+Also notable change of reinstating `{ type: 'module' }` in the module instantiation: this was silently breaking the browser build (when missing), in Firefox no error message would be shown, Chrome gave away that without this the worker source was not treated as a module and `import.meta` use inside caused errors while instantiating.

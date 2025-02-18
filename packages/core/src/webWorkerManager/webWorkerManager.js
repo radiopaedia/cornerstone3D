@@ -1,5 +1,4 @@
 import * as Comlink from 'comlink';
-import nodeEndpoint from 'comlink/dist/esm/node-adapter.mjs';
 import { RequestType } from '../enums/';
 import { RequestPoolManager } from '../requestPool/requestPoolManager';
 
@@ -60,7 +59,7 @@ class CentralizedWorkerManager {
 
     for (let i = 0; i < maxWorkerInstances; i++) {
       const worker = workerFn();
-      workerProperties.instances.push(Comlink.wrap(nodeEndpoint(worker)));
+      workerProperties.instances.push(Comlink.wrap(worker));
       workerProperties.nativeWorkers.push(worker);
       workerProperties.workerFn = workerFn;
     }
@@ -94,9 +93,7 @@ class CentralizedWorkerManager {
     // Check and recreate the worker if it was terminated.
     if (workerProperties.instances[minLoadIndex] === null) {
       const worker = workerProperties.workerFn();
-      workerProperties.instances[minLoadIndex] = Comlink.wrap(
-        nodeEndpoint(worker)
-      );
+      workerProperties.instances[minLoadIndex] = Comlink.wrap(worker);
       workerProperties.nativeWorkers[minLoadIndex] = worker;
     }
 

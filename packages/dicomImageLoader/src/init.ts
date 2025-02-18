@@ -2,14 +2,12 @@ import { setOptions } from './imageLoader/internal/index';
 import type { LoaderOptions } from './types';
 import registerLoaders from './imageLoader/registerLoaders';
 import { getWebWorkerManager } from '@cornerstonejs/core';
-import { Worker } from 'node:worker_threads';
 
 const workerFn = () => {
   const instance = new Worker(
     new URL('./decodeImageFrameWorker.js', import.meta.url),
+    { type: 'module' }
   );
-  // do not let the running worker prevent script completion in node.js
-  if (typeof instance.unref === 'function') instance.unref()
   return instance;
 };
 
